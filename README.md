@@ -4,7 +4,6 @@
 
 A production-ready Laravel 11 API backend that serves real-time ad configurations to mobile SDKs, supports multi-network mediation with fallback control, handles high-volume event tracking asynchronously, and provides rich analytics.
 
----
 
 ## Architecture Overview
 
