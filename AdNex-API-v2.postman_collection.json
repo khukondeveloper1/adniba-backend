@@ -1,0 +1,605 @@
+{
+  "info": {
+    "name": "AdNiba API v2 — Full",
+    "_postman_id": "adniba-api-v2-full",
+    "description": "Admin + Developer + SDK — সব endpoint এক জায়গায়",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",    "value": "http://127.0.0.1:8000" },
+    { "key": "admin_token", "value": "" },
+    { "key": "dev_token",   "value": "" },
+    { "key": "api_key",     "value": "" },
+    { "key": "app_id",      "value": "1" },
+    { "key": "appId",       "value": "1" },
+    { "key": "network_id",  "value": "1" },
+    { "key": "unit_id",     "value": "1" },
+    { "key": "user_id",     "value": "1" },
+    { "key": "request_id",  "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Admin — Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json();",
+            "if(j.access_token){ pm.collectionVariables.set('admin_token', j.access_token); console.log('✅ Admin token saved'); }"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"changeme123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/auth/login", "host": ["{{base_url}}"], "path": ["api","v1","admin","auth","login"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/auth/logout", "host": ["{{base_url}}"], "path": ["api","v1","admin","auth","logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📱 Admin — Apps",
+      "item": [
+        {
+          "name": "Get All Apps",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps"] } }
+        },
+        {
+          "name": "Create App",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json();",
+            "if(j.data && j.data.id){ pm.collectionVariables.set('app_id', j.data.id); pm.collectionVariables.set('appId', j.data.id); pm.collectionVariables.set('api_key', j.data.api_key); }"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"My App\",\n  \"package_name\": \"com.example.myapp\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps"] }
+          }
+        },
+        {
+          "name": "Toggle Ads Enabled",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/ads-enabled", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{app_id}}","ads-enabled"] }
+          }
+        },
+        {
+          "name": "Rotate API Key",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json(); if(j.api_key) pm.collectionVariables.set('api_key', j.api_key);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/rotate-key", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{app_id}}","rotate-key"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌐 Admin — Networks",
+      "item": [
+        {
+          "name": "Add AdMob",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json(); if(j.data && j.data.id) pm.collectionVariables.set('network_id', j.data.id);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"admob\",\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/networks", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","networks"] }
+          }
+        },
+        {
+          "name": "Add Meta",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"meta\",\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/networks", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","networks"] }
+          }
+        },
+        {
+          "name": "Toggle Network",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": false\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/networks/{{network_id}}/toggle", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","networks","{{network_id}}","toggle"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Admin — Ad Units",
+      "item": [
+        {
+          "name": "Get All Units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/units", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","units"] }
+          }
+        },
+        {
+          "name": "Create Unit — AdMob Banner Home",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json(); if(j.data && j.data.id) pm.collectionVariables.set('unit_id', j.data.id);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network_id\": 1,\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"unit_id\": \"ca-app-pub-3940256099942544/6300978111\",\n  \"priority\": 1,\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/units", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","units"] }
+          }
+        },
+        {
+          "name": "Create Unit — Meta Banner Home",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network_id\": 2,\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"unit_id\": \"meta-banner-home-test-123\",\n  \"priority\": 2,\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/units", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","units"] }
+          }
+        },
+        {
+          "name": "Create Unit — AdMob Interstitial Splash",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network_id\": 1,\n  \"ad_type\": \"interstitial\",\n  \"placement\": \"splash\",\n  \"unit_id\": \"ca-app-pub-3940256099942544/1033173712\",\n  \"priority\": 1,\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/units", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","units"] }
+          }
+        },
+        {
+          "name": "Toggle Unit",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"enabled\": false\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/units/{{unit_id}}/toggle", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","units","{{unit_id}}","toggle"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Admin — Settings",
+      "item": [
+        {
+          "name": "Upsert — Fallback Mode",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"fallback_enabled\": true,\n  \"network_id\": null\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/settings", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","settings"] }
+          }
+        },
+        {
+          "name": "Upsert — Force Mode (AdMob only)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"fallback_enabled\": false,\n  \"network_id\": 1\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/apps/{{appId}}/settings", "host": ["{{base_url}}"], "path": ["api","v1","admin","apps","{{appId}}","settings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Admin — Analytics",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/analytics?app_id={{app_id}}&from=2024-01-01&to=2026-12-31", "host": ["{{base_url}}"], "path": ["api","v1","admin","analytics"], "query": [{"key":"app_id","value":"{{app_id}}"},{"key":"from","value":"2024-01-01"},{"key":"to","value":"2026-12-31"}] }
+          }
+        },
+        {
+          "name": "Daily Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/analytics/daily?app_id={{app_id}}&from=2024-01-01&to=2026-12-31", "host": ["{{base_url}}"], "path": ["api","v1","admin","analytics","daily"], "query": [{"key":"app_id","value":"{{app_id}}"},{"key":"from","value":"2024-01-01"},{"key":"to","value":"2026-12-31"}] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 Admin — User Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/users", "host": ["{{base_url}}"], "path": ["api","v1","admin","users"] }
+          }
+        },
+        {
+          "name": "Get All Users — Search",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/users?search=john&status=1", "host": ["{{base_url}}"], "path": ["api","v1","admin","users"], "query": [{"key":"search","value":"john"},{"key":"status","value":"1"}] }
+          }
+        },
+        {
+          "name": "Get Single User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api","v1","admin","users","{{user_id}}"] }
+          }
+        },
+        {
+          "name": "Toggle User Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"active\": false\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/status", "host": ["{{base_url}}"], "path": ["api","v1","admin","users","{{user_id}}","status"] }
+          }
+        },
+        {
+          "name": "Set App Limit",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"limit\": 10\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/users/{{user_id}}/app-limit", "host": ["{{base_url}}"], "path": ["api","v1","admin","users","{{user_id}}","app-limit"] }
+          }
+        },
+        {
+          "name": "Send Email to User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"subject\": \"Important Update\",\n  \"body\": \"<p>Dear developer, we have an important update for you.</p>\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/emails/send", "host": ["{{base_url}}"], "path": ["api","v1","admin","emails","send"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Admin — Limit Requests",
+      "item": [
+        {
+          "name": "Get All Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/limit-requests?status=pending", "host": ["{{base_url}}"], "path": ["api","v1","admin","limit-requests"], "query": [{"key":"status","value":"pending"}] }
+          }
+        },
+        {
+          "name": "Approve Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"Approved based on your usage history.\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/limit-requests/{{request_id}}/approve", "host": ["{{base_url}}"], "path": ["api","v1","admin","limit-requests","{{request_id}}","approve"] }
+          }
+        },
+        {
+          "name": "Reject Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"Please use your existing apps more before requesting an increase.\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/limit-requests/{{request_id}}/reject", "host": ["{{base_url}}"], "path": ["api","v1","admin","limit-requests","{{request_id}}","reject"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📧 Admin — Emails",
+      "item": [
+        {
+          "name": "Email Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/admin/emails", "host": ["{{base_url}}"], "path": ["api","v1","admin","emails"] }
+          }
+        },
+        {
+          "name": "Broadcast to All Users",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"subject\": \"Platform Announcement\",\n  \"body\": \"<h2>New Feature!</h2><p>We just launched something awesome.</p>\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/admin/emails/broadcast", "host": ["{{base_url}}"], "path": ["api","v1","admin","emails","broadcast"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍💻 Developer — Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json();",
+            "if(j.data && j.data.access_token){ pm.collectionVariables.set('dev_token', j.data.access_token); pm.collectionVariables.set('user_id', j.data.user.id); console.log('✅ Dev token saved'); }"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"John Developer\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/auth/register", "host": ["{{base_url}}"], "path": ["api","v1","developer","auth","register"] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json();",
+            "if(j.data && j.data.access_token){ pm.collectionVariables.set('dev_token', j.data.access_token); console.log('✅ Dev token saved'); }"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/auth/login", "host": ["{{base_url}}"], "path": ["api","v1","developer","auth","login"] }
+          }
+        },
+        {
+          "name": "Me (Profile)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/auth/me", "host": ["{{base_url}}"], "path": ["api","v1","developer","auth","me"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/auth/logout", "host": ["{{base_url}}"], "path": ["api","v1","developer","auth","logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📱 Developer — My Apps",
+      "item": [
+        {
+          "name": "List My Apps",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps"] }
+          }
+        },
+        {
+          "name": "Create App",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json();",
+            "if(j.data && j.data.id){ pm.collectionVariables.set('app_id', j.data.id); pm.collectionVariables.set('appId', j.data.id); pm.collectionVariables.set('api_key', j.data.api_key); }"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"My Dev App\",\n  \"package_name\": \"com.mydev.app\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps"] }
+          }
+        },
+        {
+          "name": "Get App Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{app_id}}", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{app_id}}"] }
+          }
+        },
+        {
+          "name": "App Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{app_id}}/stats?from=2024-01-01&to=2026-12-31", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{app_id}}","stats"], "query": [{"key":"from","value":"2024-01-01"},{"key":"to","value":"2026-12-31"}] }
+          }
+        },
+        {
+          "name": "Rotate API Key",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{app_id}}/rotate-key", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{app_id}}","rotate-key"] }
+          }
+        },
+        {
+          "name": "Delete App",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{app_id}}", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{app_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌐 Developer — Networks",
+      "item": [
+        {
+          "name": "Get Networks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/networks", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","networks"] }
+          }
+        },
+        {
+          "name": "Add AdMob",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"admob\",\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/networks", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","networks"] }
+          }
+        },
+        {
+          "name": "Add Meta",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"meta\",\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/networks", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","networks"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Developer — Ad Units",
+      "item": [
+        {
+          "name": "Get All Units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/units", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","units"] }
+          }
+        },
+        {
+          "name": "Create Banner Home Unit",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network_id\": 1,\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"unit_id\": \"ca-app-pub-xxx/yyy\",\n  \"priority\": 1,\n  \"enabled\": true\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/units", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","units"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Developer — Settings",
+      "item": [
+        {
+          "name": "Get All Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/settings", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","settings"] }
+          }
+        },
+        {
+          "name": "Upsert — Fallback Mode",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"fallback_enabled\": true,\n  \"network_id\": null\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/apps/{{appId}}/settings", "host": ["{{base_url}}"], "path": ["api","v1","developer","apps","{{appId}}","settings"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Developer — Limit Requests",
+      "item": [
+        {
+          "name": "My Limit Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/developer/limit-requests", "host": ["{{base_url}}"], "path": ["api","v1","developer","limit-requests"] }
+          }
+        },
+        {
+          "name": "Submit Limit Request",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var j = pm.response.json(); if(j.data && j.data.id) pm.collectionVariables.set('request_id', j.data.id);"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{dev_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"requested_limit\": 10,\n  \"reason\": \"I have multiple client projects that need separate apps.\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/developer/limit-requests", "host": ["{{base_url}}"], "path": ["api","v1","developer","limit-requests"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📡 SDK — Ad Endpoints",
+      "item": [
+        {
+          "name": "Networks Init",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/ads/networks", "host": ["{{base_url}}"], "path": ["api","v1","ads","networks"] }
+          }
+        },
+        {
+          "name": "Ad Config — Banner Home",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-api-key", "value": "{{api_key}}" }],
+            "url": { "raw": "{{base_url}}/api/v1/ads/config?ad_type=banner&placement=home", "host": ["{{base_url}}"], "path": ["api","v1","ads","config"], "query": [{"key":"ad_type","value":"banner"},{"key":"placement","value":"home"}] }
+          }
+        },
+        {
+          "name": "Track — Impression",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-api-key", "value": "{{api_key}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network\": \"admob\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"impression\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/ads/event", "host": ["{{base_url}}"], "path": ["api","v1","ads","event"] }
+          }
+        },
+        {
+          "name": "Track — Click",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-api-key", "value": "{{api_key}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network\": \"admob\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"click\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/ads/event", "host": ["{{base_url}}"], "path": ["api","v1","ads","event"] }
+          }
+        },
+        {
+          "name": "Track — Request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-api-key", "value": "{{api_key}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network\": \"meta\",\n  \"ad_type\": \"interstitial\",\n  \"placement\": \"splash\",\n  \"event_type\": \"request\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/ads/event", "host": ["{{base_url}}"], "path": ["api","v1","ads","event"] }
+          }
+        },
+        {
+          "name": "Track — Fail",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-api-key", "value": "{{api_key}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"network\": \"meta\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"fail\"\n}" },
+            "url": { "raw": "{{base_url}}/api/v1/ads/event", "host": ["{{base_url}}"], "path": ["api","v1","ads","event"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Health",
+      "item": [
+        {
+          "name": "Server Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/up", "host": ["{{base_url}}"], "path": ["up"] }
+          }
+        }
+      ]
+    }
+  ]
+}

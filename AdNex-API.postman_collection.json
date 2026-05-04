@@ -1,0 +1,900 @@
+{
+  "info": {
+    "name": "AdNiba API",
+    "_postman_id": "adniba-api-collection-v1",
+    "description": "Ad Network Management & Mediation Platform — সব API endpoint এক জায়গায়",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Login করলে automatically set হবে"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "string",
+      "description": "App তৈরি করলে manually set করুন"
+    },
+    {
+      "key": "app_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "network_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "unit_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Admin — Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.access_token) {",
+                  "    pm.collectionVariables.set('token', json.access_token);",
+                  "    console.log('✅ Token saved:', json.access_token);",
+                  "} else {",
+                  "    console.log('❌ Login failed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"changeme123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "auth", "login"]
+            },
+            "description": "Admin login — token automatically save হবে"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📱 Admin — Apps",
+      "item": [
+        {
+          "name": "Get All Apps",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps"]
+            }
+          }
+        },
+        {
+          "name": "Get Single App",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create App",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('app_id', json.data.id);",
+                  "    pm.collectionVariables.set('api_key', json.data.api_key);",
+                  "    console.log('✅ App ID:', json.data.id);",
+                  "    console.log('✅ API Key:', json.data.api_key);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Test App\",\n  \"package_name\": \"com.mytest.app\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps"]
+            },
+            "description": "App তৈরি — app_id ও api_key automatically save হবে"
+          }
+        },
+        {
+          "name": "Update App",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated App Name\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete App",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Rotate API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.api_key) {",
+                  "    pm.collectionVariables.set('api_key', json.api_key);",
+                  "    console.log('✅ New API Key:', json.api_key);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/rotate-key",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "rotate-key"]
+            }
+          }
+        },
+        {
+          "name": "Toggle App Status (Active/Inactive)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Ads Enabled (Global Kill Switch)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/ads-enabled",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "ads-enabled"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌐 Admin — Networks",
+      "item": [
+        {
+          "name": "Get All Networks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/networks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "networks"]
+            }
+          }
+        },
+        {
+          "name": "Add AdMob Network",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('network_id', json.data.id);",
+                  "    console.log('✅ Network ID:', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"admob\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/networks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "networks"]
+            }
+          }
+        },
+        {
+          "name": "Add Meta Network",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"meta\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/networks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "networks"]
+            }
+          }
+        },
+        {
+          "name": "Add Unity Network",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"unity\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/networks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "networks"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Network Enable/Disable",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/networks/{{network_id}}/toggle",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "networks", "{{network_id}}", "toggle"]
+            }
+          }
+        },
+        {
+          "name": "Delete Network",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/networks/{{network_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "networks", "{{network_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Admin — Ad Units",
+      "item": [
+        {
+          "name": "Get All Units",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units"]
+            }
+          }
+        },
+        {
+          "name": "Get Single Unit",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units/{{unit_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units", "{{unit_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Unit — AdMob Banner Home",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "    pm.collectionVariables.set('unit_id', json.data.id);",
+                  "    console.log('✅ Unit ID:', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network_id\": 1,\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"unit_id\": \"ca-app-pub-3940256099942544/6300978111\",\n  \"priority\": 1,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units"]
+            }
+          }
+        },
+        {
+          "name": "Create Unit — Meta Banner Home",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network_id\": 2,\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"unit_id\": \"meta-banner-home-test-123\",\n  \"priority\": 2,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units"]
+            }
+          }
+        },
+        {
+          "name": "Create Unit — AdMob Interstitial Splash",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network_id\": 1,\n  \"ad_type\": \"interstitial\",\n  \"placement\": \"splash\",\n  \"unit_id\": \"ca-app-pub-3940256099942544/1033173712\",\n  \"priority\": 1,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units"]
+            }
+          }
+        },
+        {
+          "name": "Create Unit — AdMob Rewarded Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network_id\": 1,\n  \"ad_type\": \"rewarded\",\n  \"placement\": \"result\",\n  \"unit_id\": \"ca-app-pub-3940256099942544/5224354917\",\n  \"priority\": 1,\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units"]
+            }
+          }
+        },
+        {
+          "name": "Update Unit",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unit_id\": \"ca-app-pub-new-unit-id\",\n  \"priority\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units/{{unit_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units", "{{unit_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Toggle Unit Enable/Disable",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units/{{unit_id}}/toggle",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units", "{{unit_id}}", "toggle"]
+            }
+          }
+        },
+        {
+          "name": "Delete Unit",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/units/{{unit_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "units", "{{unit_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ Admin — Settings",
+      "item": [
+        {
+          "name": "Get All Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Get Setting for Placement",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/settings/banner/home",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "settings", "banner", "home"]
+            }
+          }
+        },
+        {
+          "name": "Upsert Setting — Fallback Mode (Mediation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"fallback_enabled\": true,\n  \"network_id\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "settings"]
+            },
+            "description": "fallback_enabled=true → সব network try করবে priority অনুযায়ী"
+          }
+        },
+        {
+          "name": "Upsert Setting — Force Mode (Single Network)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"fallback_enabled\": false,\n  \"network_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/settings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "settings"]
+            },
+            "description": "fallback_enabled=false → শুধু network_id=1 (AdMob) ব্যবহার করবে"
+          }
+        },
+        {
+          "name": "Delete Setting",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/apps/{{app_id}}/settings/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "apps", "{{app_id}}", "settings", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Admin — Analytics",
+      "item": [
+        {
+          "name": "Summary Analytics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/analytics?app_id={{app_id}}&from=2024-01-01&to=2026-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "analytics"],
+              "query": [
+                { "key": "app_id", "value": "{{app_id}}" },
+                { "key": "from", "value": "2024-01-01" },
+                { "key": "to", "value": "2026-12-31" }
+              ]
+            },
+            "description": "CTR, fill rate, match rate সহ পুরো summary"
+          }
+        },
+        {
+          "name": "Daily Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/analytics/daily?app_id={{app_id}}&from=2024-01-01&to=2026-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "analytics", "daily"],
+              "query": [
+                { "key": "app_id", "value": "{{app_id}}" },
+                { "key": "from", "value": "2024-01-01" },
+                { "key": "to", "value": "2026-12-31" }
+              ]
+            },
+            "description": "দিন অনুযায়ী event count — চার্টের জন্য"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📡 SDK — Ad Endpoints",
+      "item": [
+        {
+          "name": "Networks Init",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/networks",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "networks"]
+            },
+            "description": "App চালু হলে প্রথমে এটা call করে কোন SDK init করবে জানে"
+          }
+        },
+        {
+          "name": "Ad Config — Banner Home",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/config?ad_type=banner&placement=home",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "config"],
+              "query": [
+                { "key": "ad_type", "value": "banner" },
+                { "key": "placement", "value": "home" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ad Config — Interstitial Splash",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/config?ad_type=interstitial&placement=splash",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "config"],
+              "query": [
+                { "key": "ad_type", "value": "interstitial" },
+                { "key": "placement", "value": "splash" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ad Config — Rewarded Result",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/config?ad_type=rewarded&placement=result",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "config"],
+              "query": [
+                { "key": "ad_type", "value": "rewarded" },
+                { "key": "placement", "value": "result" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Track Event — Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"admob\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"request\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/event",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "event"]
+            }
+          }
+        },
+        {
+          "name": "Track Event — Impression",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"admob\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"impression\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/event",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "event"]
+            }
+          }
+        },
+        {
+          "name": "Track Event — Click",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"admob\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"click\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/event",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "event"]
+            }
+          }
+        },
+        {
+          "name": "Track Event — Fail",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"meta\",\n  \"ad_type\": \"banner\",\n  \"placement\": \"home\",\n  \"event_type\": \"fail\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/event",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "event"]
+            }
+          }
+        },
+        {
+          "name": "Track Event — Load",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "x-api-key", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"network\": \"admob\",\n  \"ad_type\": \"interstitial\",\n  \"placement\": \"splash\",\n  \"event_type\": \"load\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ads/event",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ads", "event"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Health Check",
+      "item": [
+        {
+          "name": "Server Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/up",
+              "host": ["{{base_url}}"],
+              "path": ["up"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

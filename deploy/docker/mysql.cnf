@@ -1,0 +1,36 @@
+[mysqld]
+# ── Character set ─────────────────────────────────────────────────────────────
+character-set-server  = utf8mb4
+collation-server      = utf8mb4_unicode_ci
+
+# ── InnoDB — tuned for high-write (ad_events) ────────────────────────────────
+innodb_buffer_pool_size        = 1G          # Set to 70-80% of RAM in prod
+innodb_buffer_pool_instances   = 4           # One per CPU core up to 8
+innodb_log_file_size           = 256M        # Larger = fewer flushes
+innodb_flush_log_at_trx_commit = 2           # Slight durability trade-off for speed
+                                              # (lose at most 1s of events on crash)
+innodb_flush_method            = O_DIRECT
+innodb_io_capacity             = 2000        # For SSD; use 200 for spinning disk
+innodb_io_capacity_max         = 4000
+innodb_read_io_threads         = 4
+innodb_write_io_threads        = 8
+innodb_file_per_table          = ON          # Easier table management
+
+# ── Connection pool ───────────────────────────────────────────────────────────
+max_connections         = 500
+wait_timeout            = 600
+interactive_timeout     = 600
+
+# ── Query cache (disabled — row-level caching via Redis is preferred) ─────────
+query_cache_type        = 0
+query_cache_size        = 0
+
+# ── Binary log (enable for replication) ──────────────────────────────────────
+# log_bin                = /var/lib/mysql/binlog
+# binlog_format          = ROW
+# expire_logs_days       = 7
+
+# ── Slow query log — uncomment to profile ─────────────────────────────────────
+# slow_query_log         = 1
+# slow_query_log_file    = /var/log/mysql/slow.log
+# long_query_time        = 0.1    # 100ms threshold
