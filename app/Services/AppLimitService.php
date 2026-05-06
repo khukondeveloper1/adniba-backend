@@ -72,8 +72,11 @@ class AppLimitService
             'reviewed_at' => now(),
         ]);
 
+        // Calculate the new limit (previous limit + requested limit)
+        $newLimit = $request->user->app_limit + $request->requested_limit;
+
         // Update the user's actual limit
-        $request->user->update(['app_limit' => $request->requested_limit]);
+        $request->user->update(['app_limit' => $newLimit]);
 
         // Send notification email async
         SendEmailJob::dispatch(
@@ -83,7 +86,7 @@ class AppLimitService
             type:    'limit_approved',
             data:    [
                 'name'            => $request->user->name,
-                'new_limit'       => $request->requested_limit,
+                'new_limit'       => $newLimit,
                 'admin_note'      => $note,
             ]
         )->onQueue('default');
