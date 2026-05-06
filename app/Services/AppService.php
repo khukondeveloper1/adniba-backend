@@ -14,6 +14,7 @@ class AppService
         private readonly AppStateService        $stateService,
         private readonly AppEventService        $eventService,
         private readonly AdConfigService        $configService,
+        private readonly EmailService           $emailService,
     ) {}
 
     public function listApps(): Collection
@@ -111,9 +112,14 @@ class AppService
     {
         $app = $this->getApp($id);
 
-        return $active
+        $updated = $active
             ? $this->stateService->activate($app, $actorType, $actorId)
             : $this->stateService->deactivate($app, $actorType, $actorId);
+
+        $updated->loadMissing('user');
+        $this->emailService->sendAppStatusChanged($updated);
+
+        return $updated;
     }
 
     public function listEvents(int $id): Collection

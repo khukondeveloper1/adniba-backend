@@ -44,9 +44,31 @@ class UserController extends Controller
     /** PATCH /api/v1/admin/users/{id}/status — activate/deactivate */
     public function toggleStatus(Request $request, int $id): JsonResponse
     {
-        $request->validate(['active' => ['required', 'boolean']]);
+        $request->validate([
+            'active' => ['required', 'boolean'],
+            'reason' => ['nullable', 'string', 'min:5', 'max:500'],
+        ]);
 
-        $user = $this->userService->toggleStatus($id, (bool) $request->input('active'));
+        $active = (bool) $request->input('active');
+        $reason = $request->input('reason');
+
+        if (!$active && !filled($reason)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed.',
+                'errors' => [
+                    'reason' => ['A reason is required when deactivating an account.'],
+                ],
+            ], 422);
+        }
+
+        $wasActive = (bool) $this->userService->getUser($id)->status;
+
+        $user = $this->userService->toggleStatus($id, $active, $reason);
+
+        if ($wasActive !== $active) {
+            $this->emailService->sendAccountStatusChanged($user, $active, $reason);
+        }
 
         return response()->json(['status' => 'ok', 'data' => $user]);
     }

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Api\V1\Developer;
 
 use App\Http\Controllers\Controller;
-use App\Jobs\SendEmailJob;
 use App\Models\User;
 use App\Services\DeveloperProfileService;
+use App\Services\EmailService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,7 +19,8 @@ use Illuminate\Http\Request;
 class PasswordResetController extends Controller
 {
     public function __construct(
-        private readonly DeveloperProfileService $profileService
+        private readonly DeveloperProfileService $profileService,
+        private readonly EmailService $emailService,
     ) {}
 
     /**
@@ -38,23 +39,9 @@ class PasswordResetController extends Controller
         if ($token) {
             $user = User::where('email', $request->input('email'))->first();
 
-            SendEmailJob::dispatch(
-                userId:  $user->id,
-                toEmail: $user->email,
-                subject: 'Reset Your AdNiba Password',
-                type:    'custom',
-                data:    [
-                    'name' => $user->name,
-                    'body' => "
-                        <h2>Password Reset Request</h2>
-                        <p>You requested a password reset for your AdNiba account.</p>
-                        <p>Your password reset token is:</p>
-                        <pre style='background:#f4f4f4;padding:15px;font-size:18px;'>{$token}</pre>
-                        <p>This token expires in <strong>1 hour</strong>.</p>
-                        <p>If you did not request this, please ignore this email.</p>
-                    ",
-                ]
-            )->onQueue('default');
+            if ($user) {
+                $this->emailService->sendPasswordReset($user, $token);
+            }
         }
 
         return response()->json([
@@ -77,11 +64,13 @@ class PasswordResetController extends Controller
         ]);
 
         try {
-            $this->profileService->resetPassword(
+            $user = $this->profileService->resetPassword(
                 $request->input('email'),
                 $request->input('token'),
                 $request->input('password')
             );
+
+            $this->emailService->sendPasswordResetSuccess($user);
         } catch (\RuntimeException $e) {
             return response()->json([
                 'status'  => 'error',

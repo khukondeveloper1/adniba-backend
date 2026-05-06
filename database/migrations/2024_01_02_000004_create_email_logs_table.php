@@ -19,6 +19,9 @@ return new class extends Migration
                 'announcement',
                 'custom',
                 'welcome',
+                'email_verification',
+                'password_reset',
+                'password_reset_success',
             ])->default('custom');
             $table->enum('status', ['queued', 'sent', 'failed'])->default('queued');
             $table->text('error')->nullable();

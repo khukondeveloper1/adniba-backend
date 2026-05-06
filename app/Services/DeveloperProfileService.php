@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
@@ -17,6 +18,58 @@ class DeveloperProfileService
     {
         $allowed = ['name', 'phone', 'company', 'website'];
         $user->update(array_intersect_key($data, array_flip($allowed)));
+
+        return $user->fresh();
+    }
+
+    /**
+     * Generate a 6-digit email verification code.
+     * Stores hashed code in DB with 1-hour expiry.
+     */
+    public function generateVerificationCode(User $user): string
+    {
+        $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+
+        $user->update([
+            'email_verification_code'       => Hash::make($code),
+            'email_verification_expires_at' => now()->addHour(),
+        ]);
+
+        return $code;
+    }
+
+    /**
+     * Verify email using the 6-digit code.
+     */
+    public function verifyEmail(string $email, string $code): User
+    {
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            throw new \RuntimeException('User not found.', 404);
+        }
+
+        if ($user->email_verified_at) {
+            throw new \RuntimeException('Email is already verified.', 422);
+        }
+
+        if (!$user->email_verification_code) {
+            throw new \RuntimeException('No verification code found. Please request a new one.', 422);
+        }
+
+        if (now()->gt($user->email_verification_expires_at)) {
+            throw new \RuntimeException('Verification code has expired. Please request a new one.', 422);
+        }
+
+        if (!Hash::check($code, $user->email_verification_code)) {
+            throw new \RuntimeException('Invalid verification code.', 422);
+        }
+
+        $user->update([
+            'email_verified_at'             => now(),
+            'email_verification_code'       => null,
+            'email_verification_expires_at' => null,
+        ]);
 
         return $user->fresh();
     }
@@ -82,26 +135,30 @@ class DeveloperProfileService
     /**
      * Reset password using a token.
      */
-    public function resetPassword(string $email, string $token, string $newPassword): void
+    public function resetPassword(string $email, string $token, string $newPassword): User
     {
-        $user = User::where('email', $email)->first();
+        return DB::transaction(function () use ($email, $token, $newPassword) {
+            $user = User::where('email', $email)->lockForUpdate()->first();
 
-        if (!$user || !$user->password_reset_token) {
-            throw new \RuntimeException('Invalid reset token.', 422);
-        }
+            if (!$user || !$user->password_reset_token) {
+                throw new \RuntimeException('Invalid reset token.', 422);
+            }
 
-        if (now()->gt($user->password_reset_expires_at)) {
-            throw new \RuntimeException('Reset token has expired. Please request a new one.', 422);
-        }
+            if (now()->gt($user->password_reset_expires_at)) {
+                throw new \RuntimeException('Reset token has expired. Please request a new one.', 422);
+            }
 
-        if (!Hash::check($token, $user->password_reset_token)) {
-            throw new \RuntimeException('Invalid reset token.', 422);
-        }
+            if (!Hash::check($token, $user->password_reset_token)) {
+                throw new \RuntimeException('Invalid reset token.', 422);
+            }
 
-        $user->update([
-            'password'                  => Hash::make($newPassword),
-            'password_reset_token'      => null,
-            'password_reset_expires_at' => null,
-        ]);
+            $user->update([
+                'password'                  => Hash::make($newPassword),
+                'password_reset_token'      => null,
+                'password_reset_expires_at' => null,
+            ]);
+
+            return $user->fresh();
+        });
     }
 }

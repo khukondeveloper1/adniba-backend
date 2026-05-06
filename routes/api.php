@@ -132,6 +132,10 @@ Route::prefix('v1')->group(function () {
             // Password reset (public — no auth needed)
             Route::post('forgot-password', [Developer\PasswordResetController::class, 'forgotPassword']);
             Route::post('reset-password',  [Developer\PasswordResetController::class, 'resetPassword']);
+
+            // Email verification (public — no auth needed)
+            Route::post('verify-email',          [Developer\AuthController::class, 'verifyEmail']);
+            Route::post('resend-verification',   [Developer\AuthController::class, 'resendVerification']);
         });
 
         // Protected developer routes

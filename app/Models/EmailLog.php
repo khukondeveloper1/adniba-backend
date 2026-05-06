@@ -26,6 +26,9 @@ class EmailLog extends Model
     public const TYPE_ANNOUNCEMENT   = 'announcement';
     public const TYPE_CUSTOM         = 'custom';
     public const TYPE_WELCOME        = 'welcome';
+    public const TYPE_EMAIL_VERIFICATION = 'email_verification';
+    public const TYPE_PASSWORD_RESET = 'password_reset';
+    public const TYPE_PASSWORD_RESET_SUCCESS = 'password_reset_success';
 
     public function user(): BelongsTo
     {

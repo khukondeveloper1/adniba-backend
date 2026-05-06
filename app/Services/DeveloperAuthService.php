@@ -18,10 +18,14 @@ class DeveloperAuthService
             'app_limit' => 3,
         ]);
 
-        // ✅ User model দিয়ে সরাসরি token তৈরি
-        $token = JWTAuth::fromUser($user);
-
-        return $this->tokenResponse($token, $user);
+        // No JWT token until email is verified
+        return [
+            'user' => [
+                'id'    => $user->id,
+                'name'  => $user->name,
+                'email' => $user->email,
+            ],
+        ];
     }
 
     public function login(string $email, string $password): array
@@ -34,6 +38,10 @@ class DeveloperAuthService
 
         if (!$user->isActive()) {
             throw new \RuntimeException('Your account has been deactivated.', 403);
+        }
+
+        if (!$user->email_verified_at) {
+            throw new \RuntimeException('Please verify your email before logging in.', 403);
         }
 
         // ✅ User model দিয়ে সরাসরি token তৈরি

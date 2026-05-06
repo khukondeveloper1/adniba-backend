@@ -39,10 +39,14 @@ class AdminUserService
     /**
      * Activate or deactivate a developer account.
      */
-    public function toggleStatus(int $id, bool $active): User
+    public function toggleStatus(int $id, bool $active, ?string $reason = null): User
     {
         $user = User::findOrFail($id);
-        $user->update(['status' => $active]);
+        $user->update([
+            'status' => $active,
+            'deactivation_reason' => $active ? null : $reason,
+            'deactivated_at' => $active ? null : now(),
+        ]);
 
         return $user->fresh();
     }

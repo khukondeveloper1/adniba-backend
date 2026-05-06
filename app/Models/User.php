@@ -15,15 +15,29 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'phone',
+        'company',
+        'website',
+        'avatar',
+        'role',
         'status',
+        'deactivation_reason',
+        'deactivated_at',
         'app_limit',
+        'email_verified_at',
+        'email_verification_code',
+        'email_verification_expires_at',
+        'password_reset_token',
+        'password_reset_expires_at',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'password_reset_token', 'email_verification_code'];
 
     protected $casts = [
-        'status'    => 'boolean',
-        'app_limit' => 'integer',
+        'status'            => 'boolean',
+        'app_limit'         => 'integer',
+        'email_verified_at' => 'datetime',
+        'deactivated_at'    => 'datetime',
     ];
 
     // ─── JWT ──────────────────────────────────────────────────────────────────
@@ -58,6 +72,11 @@ class User extends Authenticatable implements JWTSubject
     public function isActive(): bool
     {
         return (bool) $this->status;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 
     public function canCreateApp(): bool
